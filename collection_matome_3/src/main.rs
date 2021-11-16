@@ -1,13 +1,12 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::io;
-//use itertools::Itertools;
 
 fn main() {
 
-    let mut map = HashMap::<String, Vec<String>>::new();
+    let mut map = BTreeMap::<String, Vec<String>>::new();
 
     loop {
-        println!("add 部署名 to 雇用者名、または exit：");
+        println!("add 雇用者名 to 部署名、または exit：");
 
         let mut instr = String::new();
 
@@ -16,61 +15,67 @@ fn main() {
             .expect("Failed to read line");
         instr = instr.trim().to_string();
 
-        let department = String::from(instr[..].to_string());
-        let department = String::from(nth_word(&department, 2)).to_string();
-        let employee = String::from(instr[..].to_string());
-        let employee = String::from(nth_word(&employee, 4)).to_string();
+        if instr == "exit" {
+            break;
+        }
 
-        match &department[..] {
-            "exit" => {
-                //println!("match {}", &department[..]);
-                break;
-            },
-            _ => {
-                //println!("unmatch {}", &department[..]);
-                //println!("values {}, {}", &department[..], &employee[..]);
+        let employee = String::from(nth_word(&instr, 2)).to_string();
+        let department = String::from(nth_word(&instr, 4)).to_string();
 
-                if &department[..] != "" && &employee[..] != "" {
+        if department != "" && employee != "" {
 
-                    match map.get_mut(&department) {
-                        Some(v) => {
-                            v.push(employee);
-                            v.sort();
-                        },
-                        None => {
-                            let v = vec![employee];
-                            map.insert(department, v);
-                        }
-                    };
-                } else {
-                    println!("!ERROR blank department or employee {}, {}", &department[..], &employee[..]);
+            match map.get_mut(&department) {
+                Some(v) => {
+                    v.push(employee);
+                },
+                None => {
+                    let v = vec![employee];
+                    map.insert(department, v);
                 }
-            },
+            };
+        } else {
+            println!("!ERROR blank department or employee {}, {}", &department, &employee);
         }
     }
-    
-    // loop {
-    //     println!("部署名 or 入力なしで全て or exit：");
 
-    //     let mut instr = String::new();
+    for value in map.values_mut() {
+        value.sort();
+    }
 
-    //     io::stdin()
-    //         .read_line(&mut instr)
-    //         .expect("Failed to read line");
+    loop {
+        println!("部署名 or 入力なしで全て or exit：");
 
-    //     let department = String::from(instr[..].to_string());
+        let mut instr = String::new();
 
-    //     match &department[0..4] {
-    //         "exit" => {
-    //             println!("match {}", &department[0..4]);
-    //             break;
-    //         },
-    //         _ => {
-    //             println!("unmatch {}", &department[0..4]);
-                
-    //         },
-    //     }
-    // }
+        io::stdin()
+            .read_line(&mut instr)
+            .expect("Failed to read line");
+        instr = instr.trim().to_string();
+
+        if instr == "exit" {
+            break;
+        }
+
+        if instr != "" {
+
+            match map.get_mut(&instr) {
+                Some(value) => {
+                    for employee in value.iter() {
+                        println!("部署：{} 雇用者：{}", instr, employee);
+                    }
+                },
+                None => {
+                    println!("!ERROR 該当する部署がありません {}", instr);
+                }
+            };
+        } else {
+            for (key, value) in &map {
+                for employee in value.iter() {
+                    println!("部署：{} 雇用者：{}", key, employee);
+                }
+            }
+        }
+    }
 
 }
 
